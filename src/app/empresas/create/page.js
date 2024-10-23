@@ -1,85 +1,66 @@
-'use client'
+"use client";
 
-import Pagina from "@/app/components/Pagina";
-import { Formik } from "formik";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button, Form } from "react-bootstrap";
-import { FaCheck } from "react-icons/fa";
-import { MdOutlineArrowBack } from "react-icons/md";
-import { v4 } from "uuid";
-
+import { Table } from "react-bootstrap";
+import { FaPlusCircle } from "react-icons/fa";
+import { AiOutlineDelete } from "react-icons/ai";
+import { FaRegEdit } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import Pagina from "../components/Pagina";
 
 export default function Page() {
+  const [empresas, setEmpresas] = useState([]);
 
-    const route = useRouter()
+  useEffect(() => {
+    setEmpresas(JSON.parse(localStorage.getItem("empresas")) || []);
+  }, []);
 
-    function salvar(dados) {
-        const empresas = JSON.parse(localStorage.getItem('empresas')) || []
-        
-        dados.id = v4()
-        
-        empresas.push(dados)
-        localStorage.setItem('empresas', JSON.stringify(empresas))
-        return route.push('/empresas')
+  function excluir(id) {
+    if (confirm("Deseja realmente excluir o registro?")) {
+      const dados = empresas.filter((item) => item.id != id);
+      localStorage.setItem("empresas", JSON.stringify(dados));
+      setEmpresas(dados);
     }
+  }
+  return (
+    <Pagina titulo="Empresas">
+      <Link href="/empresas/form" className="btn btn-primary mb-3 mt-3">
+        <FaPlusCircle /> Novo
+      </Link>
 
-    return (
-        <Pagina titulo="Empresa">
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Companhias</th>
+            <th>Logo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {empresas.map((item, i) => (
+            <tr key={item.id}>
+              <td>
+                
+                <Link href={`/empresas/form/${item.id}`}>
+                  <FaRegEdit title="Editar" className="text-primary" />
+                </Link>
 
-            <Formik
-                initialValues={{ nome: '', logo: '', site: '' }}
-                onSubmit={values => salvar(values)}
-            >
-                {({
-                    values,
-                    handleChange,
-                    handleSubmit,
-                }) => (
-                    <Form>
-                        <Form.Group className="mb-3" controlId="nome">
-                            <Form.Label>Nome</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="nome"
-                                value={values.nome}
-                                onChange={handleChange('nome')}
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3" controlId="logo">
-                            <Form.Label>Logo</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="logo"
-                                value={values.logo}
-                                onChange={handleChange('logo')}
-                            />
-                        </Form.Group>
-                        
-                        <Form.Group className="mb-3" controlId="site">
-                            <Form.Label>Site</Form.Label>
-                            <Form.Control
-                                type="text"
-                                name="site"
-                                value={values.site}
-                                onChange={handleChange('site')}
-                            />
-                        </Form.Group>
-                        <div className="text-center">
-                            <Button onClick={handleSubmit} variant="success">
-                                <FaCheck /> Salvar
-                            </Button>
-                            <Link
-                                href="/empresas"
-                                className="btn btn-danger ms-2"
-                            >
-                                <MdOutlineArrowBack /> Voltar
-                            </Link>
-                        </div>
-                    </Form>
-                )}
-            </Formik>
-        </Pagina>
-    )
+                <AiOutlineDelete
+                  className="text-danger"
+                  title="Excluir"
+                  onClick={() => excluir(item.id)}
+                />
+              </td>
+              <td>{item.nome}</td>
+              <td>
+                <a href={item.site} target="_blank">
+                  <img src={item.logo} width={100} />
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </Pagina>
+  );
 }
